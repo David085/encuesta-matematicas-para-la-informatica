@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * Q1: ¿Cuál consideras que es el principal obstáculo...?
+ */
+enum Q1Option {
+  ECONOMICOS                       // La falta de recursos económicos
+  SOBRECARGA_ESTRES                // La sobrecarga académica y el estrés
+  EQUILIBRIO_ESTUDIO_TRABAJO_VIDA  // Dificultad para equilibrar estudio, trabajo y vida personal
+  FALTA_APOYO_EMOCIONAL            // Falta de apoyo emocional o motivación
+}
+
+/**
+ * Q2: ¿Qué factor afecta más tu rendimiento académico?
+ */
+enum Q2Option {
+  FALTA_MATERIALES                 // No contar con materiales/herramientas
+  ESTRES_ANSIEDAD                  // Problemas de concentración por estrés/ansiedad
+  FALTA_TIEMPO                     // Falta de tiempo por trabajo u otras responsabilidades
+  DESMOTIVACION                    // Desmotivación o falta de interés
+}
+
+/**
+ * Q3: Cuando enfrentas dificultades económicas, ¿cuál suele ser tu principal estrategia?
+ */
+enum Q3Option {
+  TRABAJO_TEMPORAL                 // Buscar trabajos temporales/medio tiempo
+  REDUCIR_GASTOS                   // Reducir gastos personales/familiares
+  APOYO_FAMILIAR                   // Pedir apoyo a familiares o amigos
+  DEJAR_ESTUDIOS                   // Dejar temporalmente los estudios
+}
+
+/**
+ * Q4: En cuanto a tu salud mental durante la universidad, ¿cómo la describes?
+ */
+enum Q4Option {
+  ESTRES_AGOTAMIENTO               // Constantemente estresado(a) o agotado(a)
+  ALTIBAJOS_EQUILIBRIO             // Altibajos pero con equilibrio
+  AYUDA_PROFESIONAL                // He buscado ayuda profesional/psicológica
+  ESTABLE_MOTIVADO                 // Emocionalmente estable y motivado(a)
+}
+
+/**
+ * Q5: ¿Qué apoyo consideras más necesario?
+ */
+enum Q5Option {
+  BECAS_APOYOS                     // Becas y apoyos económicos
+  SALUD_MENTAL                     // Programas de salud mental y bienestar emocional
+  FLEXIBILIDAD_METODOS             // Flexibilidad académica y mejores métodos de enseñanza
+  ACTIVIDADES_INTEGRACION          // Actividades extracurriculares / integración social
+}
+
+/**
+ * Respuesta de un participante a la encuesta (única y fija).
+ * - 5 campos enum (uno por pregunta)
+ * - submittedAt: timestamp
+ * - clientHash: opcional para limitar múltiples envíos desde el mismo navegador/IP (anti-spam suave)
+ */
+model Response {
+  id           String     @id @default(uuid())
+  submittedAt  DateTime   @default(now())
+  clientHash   String?    @unique
+
+  email        String     @db.VarChar(254)
+  emailCanon   String     @db.VarChar(254) @unique // email normalizado (lowercase, trimming, sin espacios)
+
+  q1           Q1Option
+  q2           Q2Option
+  q3           Q3Option
+  q4           Q4Option
+  q5           Q5Option
+
+  @@index([submittedAt])
+}
