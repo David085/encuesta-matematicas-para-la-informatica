@@ -74,6 +74,8 @@ model Response {
   id           String     @id @default(uuid())
   submittedAt  DateTime   @default(now())
   clientHash   String?    @unique
+  name         String     @db.VarChar(100)
+  career      String     @db.VarChar(100)
   email        String     @db.VarChar(254) @unique
   q1           Q1Option
   q2           Q2Option
