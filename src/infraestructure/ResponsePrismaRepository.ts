@@ -16,11 +16,11 @@ export class PrismaResponseRepository implements ResponseRepository {
         name: data.name,
         email: data.email,
         career: data.career,
-        q1: Q1Option[data.q1],
-        q2: Q2Option[data.q2],
-        q3: Q3Option[data.q3],
-        q4: Q4Option[data.q4],
-        q5: Q5Option[data.q5],
+        q1: data.q1,
+        q2: data.q2,
+        q3: data.q3,
+        q4: data.q4,
+        q5: data.q5,
       };
       await this.prismaService.response.create({ data: payload });
       return Promise.resolve();
