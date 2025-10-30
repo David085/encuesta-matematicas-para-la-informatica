@@ -13,6 +13,6 @@ export class AppController {
 
   @Get('export')
   exportResponses(): any {
-    return 'This action exports all responses';
+    return this.appService.getResponses();
   }
 }
