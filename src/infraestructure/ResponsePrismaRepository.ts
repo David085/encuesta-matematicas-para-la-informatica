@@ -1,9 +1,9 @@
 import { CreateResponseInput } from 'src/domain/ports/create-response.input';
 import { ResponseRepository } from '../domain/ports/response.repository';
 import { PrismaService } from './prisma-service';
-import { Q1Option, Q2Option, Q3Option, Q4Option, Q5Option } from 'generated/prisma/enums';
-import { ConsoleLogger, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GetResponsesDto } from 'src/domain/get-responses.dto';
+import { Q1Option, Q2Option, Q3Option, Q4Option, Q5Option } from 'src/domain/options.enum';
 
 @Injectable()
 export class PrismaResponseRepository implements ResponseRepository {
@@ -43,12 +43,12 @@ export class PrismaResponseRepository implements ResponseRepository {
       return rows.map(r => ({ key: r[field] as string, count: r._count._all }));
     };
 
-    const normalize = <T extends Record<string, string>>(
+    const normalize = <T extends Record<string, unknown>>(
       data: { key: string; count: number }[],
       labels: T
     ) =>
       (Object.keys(labels) as (keyof T)[]).map(k => ({
-        option: labels[k],
+        option: String(labels[k] as unknown),
         count: data.find(d => d.key === (k as string))?.count ?? 0,
       }));
 
@@ -59,7 +59,7 @@ export class PrismaResponseRepository implements ResponseRepository {
       group('q4'),
       group('q5'),
     ]);
-    
+
     return {
       totalSubmissions: totalSubmissions,
       questions: [
