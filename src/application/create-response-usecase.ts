@@ -9,6 +9,7 @@ export class CreateResponseUseCase {
     if (!EmailValidator.isValid(response.email)) {
       throw new Error('Invalid email format');
     }
+    
     response.email = EmailValidator.toLowerCase(response.email);
     await this.responseRepository.create(response);
   }

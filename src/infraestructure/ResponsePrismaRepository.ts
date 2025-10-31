@@ -3,7 +3,13 @@ import { ResponseRepository } from '../domain/ports/response.repository';
 import { PrismaService } from './prisma-service';
 import { Injectable } from '@nestjs/common';
 import { GetResponsesDto } from 'src/domain/get-responses.dto';
-import { Q1Option, Q2Option, Q3Option, Q4Option, Q5Option } from 'src/domain/options.enum';
+import {
+  Q1Option as PQ1,
+  Q2Option as PQ2,
+  Q3Option as PQ3,
+  Q4Option as PQ4,
+  Q5Option as PQ5,
+} from '@prisma/client';
 
 @Injectable()
 export class PrismaResponseRepository implements ResponseRepository {
@@ -40,18 +46,24 @@ export class PrismaResponseRepository implements ResponseRepository {
         by: [field],
         _count: { _all: true },
       });
-      return rows.map(r => ({ key: r[field] as string, count: r._count._all }));
-    };
-
-    const normalize = <T extends Record<string, unknown>>(
-      data: { key: string; count: number }[],
-      labels: T
-    ) =>
-      (Object.keys(labels) as (keyof T)[]).map(k => ({
-        option: String(labels[k] as unknown),
-        count: data.find(d => d.key === (k as string))?.count ?? 0,
+      return rows.map((r) => ({
+        key: r[field] as string,
+        count: r._count._all,
       }));
+    };
+    const enumKeys = <T extends Record<string, string>>(e: T) =>
+      Object.keys(e) as (keyof T)[];
 
+    const normalize = <T extends Record<string, string>>(
+      data: { key: string; count: number }[],
+      prismaEnum: T,
+      labelEnum?: Record<keyof T, string>, 
+    ) => {
+      return enumKeys(prismaEnum).map((k) => ({
+        option: labelEnum ? labelEnum[k] : (k as string),
+        count: data.find((d) => d.key === (k as string))?.count ?? 0,
+      }));
+    };
     const [q1, q2, q3, q4, q5] = await Promise.all([
       group('q1'),
       group('q2'),
@@ -59,15 +71,18 @@ export class PrismaResponseRepository implements ResponseRepository {
       group('q4'),
       group('q5'),
     ]);
-
+    // uso:
     return {
-      totalSubmissions: totalSubmissions,
+      totalSubmissions,
       questions: [
-        { key: 'q1', totals: normalize(q1, Q1Option) },
-        { key: 'q2', totals: normalize(q2, Q2Option) },
-        { key: 'q3', totals: normalize(q3, Q3Option) },
-        { key: 'q4', totals: normalize(q4, Q4Option) },
-        { key: 'q5', totals: normalize(q5, Q5Option) },
+        {
+          key: 'q1',
+          totals: normalize(q1, PQ1 /* , LabelQ1Option si quieres texto */),
+        },
+        { key: 'q2', totals: normalize(q2, PQ2) },
+        { key: 'q3', totals: normalize(q3, PQ3) },
+        { key: 'q4', totals: normalize(q4, PQ4) },
+        { key: 'q5', totals: normalize(q5, PQ5) },
       ],
     };
   }
